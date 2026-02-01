@@ -168,12 +168,10 @@ function App() {
         />
       )}
 
-      {showProfile && (
-        <Profile user={user} onClose={() => setShowProfile(false)} />
-      )}
-
       <main className="app-main">
-        {loading ? (
+        {showProfile ? (
+          <Profile user={user} onBack={() => setShowProfile(false)} />
+        ) : loading ? (
           <p className="loading">Loading…</p>
         ) : (
           <>
