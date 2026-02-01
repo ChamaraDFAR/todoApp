@@ -16,10 +16,41 @@ router.use(requireAuth);
 const userId = (req) => req.user.id;
 
 // GET all todos (owned + in lists I'm member of), with list info
+// Query params: search, date_from, date_to, completed (0=pending, 1=completed)
 router.get('/', async (req, res) => {
   try {
     const listIds = await getListIdsForUser(userId(req));
     const placeholders = listIds.length ? listIds.map(() => '?').join(',') : '0';
+    const conditions = [
+      `(t.user_id = ? OR (t.list_id IS NOT NULL AND t.list_id IN (${placeholders})))`,
+    ];
+    const params = [userId(req), ...listIds];
+
+    const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+    if (search) {
+      conditions.push('(t.title LIKE ? OR t.description LIKE ?)');
+      const term = `%${search}%`;
+      params.push(term, term);
+    }
+
+    const dateFrom = req.query.date_from;
+    if (dateFrom) {
+      conditions.push('t.created_at >= ?');
+      params.push(`${dateFrom} 00:00:00`);
+    }
+    const dateTo = req.query.date_to;
+    if (dateTo) {
+      conditions.push('t.created_at <= ?');
+      params.push(`${dateTo} 23:59:59`);
+    }
+
+    const completedParam = req.query.completed;
+    if (completedParam === '0' || completedParam === '1') {
+      conditions.push('t.completed = ?');
+      params.push(completedParam === '1' ? 1 : 0);
+    }
+
+    const whereClause = conditions.join(' AND ');
     const [rows] = await pool.query(
       `SELECT t.*, 
         (SELECT COUNT(*) FROM documents d WHERE d.todo_id = t.id) AS document_count,
@@ -28,9 +59,9 @@ router.get('/', async (req, res) => {
        FROM todos t
        LEFT JOIN lists l ON l.id = t.list_id
        LEFT JOIN users u ON u.id = t.user_id
-       WHERE t.user_id = ? OR (t.list_id IS NOT NULL AND t.list_id IN (${placeholders}))
-       ORDER BY t.created_at DESC`,
-      [userId(req), ...listIds]
+       WHERE ${whereClause}
+       ORDER BY t.updated_at DESC, t.created_at DESC`,
+      params
     );
     const uid = userId(req);
     const listIdsToCheck = [...new Set(rows.filter((r) => r.list_id && r.user_id !== uid).map((r) => r.list_id))];

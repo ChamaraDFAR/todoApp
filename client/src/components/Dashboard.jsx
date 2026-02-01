@@ -1,6 +1,17 @@
 import './Dashboard.css';
 
-function Dashboard({ todos }) {
+function Dashboard({
+  todos,
+  filterSearch = '',
+  filterDateFrom = '',
+  filterDateTo = '',
+  filterCompleted = '',
+  onFilterSearchChange,
+  onFilterDateFromChange,
+  onFilterDateToChange,
+  onFilterCompletedChange,
+  onApplyFilters,
+}) {
   const total = todos.length;
   const completed = todos.filter((t) => t.completed).length;
   const pending = total - completed;
@@ -17,6 +28,62 @@ function Dashboard({ todos }) {
   return (
     <section className="dashboard" aria-label="Todo overview">
       <h2 className="dashboard-title">Overview</h2>
+
+      <div className="dashboard-filters">
+        <label className="dashboard-filter-label">
+          <span className="dashboard-filter-name">Search</span>
+          <input
+            type="search"
+            placeholder="Title or description..."
+            value={filterSearch}
+            onChange={(e) => onFilterSearchChange?.(e.target.value)}
+            className="dashboard-filter-input"
+          />
+        </label>
+        <label className="dashboard-filter-label">
+          <span className="dashboard-filter-name">From date</span>
+          <input
+            type="date"
+            value={filterDateFrom}
+            onChange={(e) => onFilterDateFromChange?.(e.target.value)}
+            className="dashboard-filter-input"
+          />
+        </label>
+        <label className="dashboard-filter-label">
+          <span className="dashboard-filter-name">To date</span>
+          <input
+            type="date"
+            value={filterDateTo}
+            onChange={(e) => onFilterDateToChange?.(e.target.value)}
+            className="dashboard-filter-input"
+          />
+        </label>
+        <label className="dashboard-filter-label">
+          <span className="dashboard-filter-name">Status</span>
+          <select
+            value={filterCompleted}
+            onChange={(e) => onFilterCompletedChange?.(e.target.value)}
+            className="dashboard-filter-select"
+          >
+            <option value="">All</option>
+            <option value="0">Pending</option>
+            <option value="1">Completed</option>
+          </select>
+        </label>
+        <button
+          type="button"
+          className="btn btn-primary dashboard-filter-apply"
+          onClick={() => onApplyFilters?.({
+            search: filterSearch,
+            date_from: filterDateFrom,
+            date_to: filterDateTo,
+            completed: filterCompleted,
+          })}
+        >
+          Apply filters
+        </button>
+      </div>
+
       <div className="dashboard-stats">
         {stats.map((s) => (
           <div key={s.label} className={`dashboard-stat ${s.className}`}>

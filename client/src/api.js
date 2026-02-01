@@ -93,8 +93,16 @@ export async function resetPassword(email, currentPassword, newPassword) {
   return res.json();
 }
 
-export async function getTodos() {
-  const res = await fetch(`${API}/todos`, { headers: authHeaders() });
+/** @param {{ search?: string, date_from?: string, date_to?: string, completed?: string }} params - completed: '' | '0' (pending) | '1' (completed) */
+export async function getTodos(params = {}) {
+  const q = new URLSearchParams();
+  if (params.search) q.set('search', params.search);
+  if (params.date_from) q.set('date_from', params.date_from);
+  if (params.date_to) q.set('date_to', params.date_to);
+  if (params.completed === '0' || params.completed === '1') q.set('completed', params.completed);
+  const query = q.toString();
+  const url = `${API}/todos${query ? `?${query}` : ''}`;
+  const res = await fetch(url, { headers: authHeaders() });
   await checkRes(res);
   return res.json();
 }

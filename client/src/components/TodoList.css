@@ -85,14 +85,27 @@
   padding: 0;
   cursor: pointer;
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.todo-content-top {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
+.todo-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 .todo-title {
   font-size: 0.95rem;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .list-badge {

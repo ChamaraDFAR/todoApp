@@ -37,6 +37,10 @@ function App() {
   const [selectedListId, setSelectedListId] = useState(null);
   const [showCreateList, setShowCreateList] = useState(false);
   const [manageList, setManageList] = useState(null);
+  const [filterSearch, setFilterSearch] = useState('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  const [filterCompleted, setFilterCompleted] = useState(''); // '' = all, '0' = pending, '1' = completed
 
   const loadLists = async () => {
     try {
@@ -50,16 +54,35 @@ function App() {
     if (u) setUser(u);
   }, []);
 
-  const loadTodos = async () => {
+  const loadTodos = async (filterOverride) => {
     try {
       setError(null);
-      const data = await getTodos();
+      setLoading(true);
+      const search = filterOverride?.search !== undefined ? filterOverride.search : filterSearch;
+      const dateFrom = filterOverride?.date_from !== undefined ? filterOverride.date_from : filterDateFrom;
+      const dateTo = filterOverride?.date_to !== undefined ? filterOverride.date_to : filterDateTo;
+      const completed = filterOverride?.completed !== undefined ? filterOverride.completed : filterCompleted;
+      const data = await getTodos({
+        search: (search && String(search).trim()) || undefined,
+        date_from: dateFrom || undefined,
+        date_to: dateTo || undefined,
+        completed: completed === '0' || completed === '1' ? completed : undefined,
+      });
       setTodos(data);
     } catch (e) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleApplyFilters = (filters) => {
+    loadTodos({
+      search: filters?.search,
+      date_from: filters?.date_from,
+      date_to: filters?.date_to,
+      completed: filters?.completed,
+    });
   };
 
   useEffect(() => {
@@ -236,7 +259,18 @@ function App() {
                 onManageList={setManageList}
               />
             </div>
-            <Dashboard todos={filteredTodos} />
+            <Dashboard
+              todos={filteredTodos}
+              filterSearch={filterSearch}
+              filterDateFrom={filterDateFrom}
+              filterDateTo={filterDateTo}
+              filterCompleted={filterCompleted}
+              onFilterSearchChange={setFilterSearch}
+              onFilterDateFromChange={setFilterDateFrom}
+              onFilterDateToChange={setFilterDateTo}
+              onFilterCompletedChange={setFilterCompleted}
+              onApplyFilters={handleApplyFilters}
+            />
             <TodoList
               todos={filteredTodos}
               selectedId={selectedId}

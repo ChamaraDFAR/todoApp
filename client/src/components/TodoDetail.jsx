@@ -8,6 +8,16 @@ import {
 } from '../api';
 import './TodoDetail.css';
 
+function formatDateTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+}
+
 function TodoDetail({ todo, canEdit = true, onClose, onUpdate, onDelete, onUpload, onDeleteDoc }) {
   const [downloading, setDownloading] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -61,6 +71,14 @@ function TodoDetail({ todo, canEdit = true, onClose, onUpdate, onDelete, onUploa
         <>
           <div className="todo-detail-content">
             <h2 className="todo-detail-title">{todo.title}</h2>
+            <div className="todo-detail-meta">
+              {todo.created_at && (
+                <span title="Created">Created: {formatDateTime(todo.created_at)}</span>
+              )}
+              {todo.updated_at && todo.updated_at !== todo.created_at && (
+                <span title="Last updated">Updated: {formatDateTime(todo.updated_at)}</span>
+              )}
+            </div>
             {todo.description && (
               <p className="todo-detail-description">{todo.description}</p>
             )}

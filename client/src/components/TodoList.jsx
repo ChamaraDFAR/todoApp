@@ -1,5 +1,15 @@
 import './TodoList.css';
 
+function formatDateTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString(undefined, {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  });
+}
+
 function TodoList({ todos, selectedId, onSelect, onToggle, onDelete, showListBadge }) {
   if (todos.length === 0) {
     return (
@@ -35,12 +45,17 @@ function TodoList({ todos, selectedId, onSelect, onToggle, onDelete, showListBad
               className="todo-content"
               onClick={() => onSelect(todo.id)}
             >
-              <span className="todo-title">{todo.title}</span>
-              {showListBadge && todo.list_name && (
-                <span className="list-badge" title={todo.list_name}>{todo.list_name}</span>
-              )}
-              {todo.document_count > 0 && (
-                <span className="doc-badge">{todo.document_count} file{todo.document_count !== 1 ? 's' : ''}</span>
+              <div className="todo-content-top">
+                <span className="todo-title">{todo.title}</span>
+                {showListBadge && todo.list_name && (
+                  <span className="list-badge" title={todo.list_name}>{todo.list_name}</span>
+                )}
+                {todo.document_count > 0 && (
+                  <span className="doc-badge">{todo.document_count} file{todo.document_count !== 1 ? 's' : ''}</span>
+                )}
+              </div>
+              {todo.created_at && (
+                <span className="todo-date">{formatDateTime(todo.created_at)}</span>
               )}
             </button>
             {(todo.can_edit !== false) && (
