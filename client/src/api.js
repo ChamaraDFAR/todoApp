@@ -72,6 +72,27 @@ export async function register(email, password) {
   return res.json();
 }
 
+export async function changePassword(currentPassword, newPassword) {
+  const res = await fetch(`${API}/auth/password`, {
+    method: 'PUT',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  await checkRes(res);
+  return res.json();
+}
+
+/** Reset password from login page (email + current password + new password; no auth token). */
+export async function resetPassword(email, currentPassword, newPassword) {
+  const res = await fetch(`${API}/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, currentPassword, newPassword }),
+  });
+  await checkRes(res);
+  return res.json();
+}
+
 export async function getTodos() {
   const res = await fetch(`${API}/todos`, { headers: authHeaders() });
   await checkRes(res);
