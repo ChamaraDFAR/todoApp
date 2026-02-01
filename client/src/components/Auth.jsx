@@ -197,7 +197,7 @@ function Auth({ onLoggedIn }) {
               className="auth-link"
               onClick={() => switchMode('resetPassword')}
             >
-              Change password
+              Forgot password
             </button>
           </p>
         )}
