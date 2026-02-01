@@ -16,6 +16,7 @@ import TodoForm from './components/TodoForm';
 import TodoDetail from './components/TodoDetail';
 import Dashboard from './components/Dashboard';
 import Auth from './components/Auth';
+import Profile from './components/Profile';
 import './App.css';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
   const [selectedId, setSelectedId] = useState(null);
   const [selectedTodoDetail, setSelectedTodoDetail] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     const u = getStoredUser();
@@ -140,6 +142,9 @@ function App() {
             <button type="button" className="btn btn-primary" onClick={() => setShowForm(true)}>
               + New Todo
             </button>
+            <button type="button" className="btn btn-ghost" onClick={() => setShowProfile(true)}>
+              Profile
+            </button>
             <button type="button" className="btn btn-ghost" onClick={handleLogout}>
               Sign out
             </button>
@@ -164,7 +169,9 @@ function App() {
       )}
 
       <main className="app-main">
-        {loading ? (
+        {showProfile ? (
+          <Profile user={user} onBack={() => setShowProfile(false)} />
+        ) : loading ? (
           <p className="loading">Loading…</p>
         ) : (
           <>
