@@ -1,6 +1,7 @@
 import express from 'express';
 import pool from '../db.js';
 import { upload } from '../upload.js';
+import { requireAuth } from '../middleware/auth.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -9,15 +10,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const router = express.Router();
+router.use(requireAuth);
 
-// GET all todos (with document count)
+const userId = (req) => req.user.id;
+
+// GET all todos (with document count) for current user
 router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(
       `SELECT t.*, 
         (SELECT COUNT(*) FROM documents d WHERE d.todo_id = t.id) AS document_count
        FROM todos t
-       ORDER BY t.created_at DESC`
+       WHERE t.user_id = ?
+       ORDER BY t.created_at DESC`,
+      [userId(req)]
     );
     res.json(rows);
   } catch (err) {
@@ -25,10 +31,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET single todo with documents
+// GET single todo with documents (must belong to user)
 router.get('/:id', async (req, res) => {
   try {
-    const [todos] = await pool.query('SELECT * FROM todos WHERE id = ?', [req.params.id]);
+    const [todos] = await pool.query('SELECT * FROM todos WHERE id = ? AND user_id = ?', [req.params.id, userId(req)]);
     if (todos.length === 0) return res.status(404).json({ error: 'Todo not found' });
     const [docs] = await pool.query('SELECT id, original_name, filename, created_at FROM documents WHERE todo_id = ?', [req.params.id]);
     res.json({ ...todos[0], documents: docs });
@@ -43,8 +49,8 @@ router.post('/with-documents', upload.array('files'), async (req, res) => {
     const title = req.body.title || 'Untitled';
     const description = req.body.description || '';
     const [result] = await pool.query(
-      'INSERT INTO todos (title, description) VALUES (?, ?)',
-      [title, description]
+      'INSERT INTO todos (user_id, title, description) VALUES (?, ?, ?)',
+      [userId(req), title, description]
     );
     const todoId = result.insertId;
     const files = req.files || [];
@@ -66,8 +72,8 @@ router.post('/', async (req, res) => {
   try {
     const { title, description } = req.body;
     const [result] = await pool.query(
-      'INSERT INTO todos (title, description) VALUES (?, ?)',
-      [title || 'Untitled', description || '']
+      'INSERT INTO todos (user_id, title, description) VALUES (?, ?, ?)',
+      [userId(req), title || 'Untitled', description || '']
     );
     const [rows] = await pool.query('SELECT * FROM todos WHERE id = ?', [result.insertId]);
     res.status(201).json(rows[0]);
@@ -81,10 +87,10 @@ router.put('/:id', async (req, res) => {
   try {
     const { title, description, completed } = req.body;
     await pool.query(
-      'UPDATE todos SET title = COALESCE(?, title), description = COALESCE(?, description), completed = COALESCE(?, completed), updated_at = NOW() WHERE id = ?',
-      [title, description, completed, req.params.id]
+      'UPDATE todos SET title = COALESCE(?, title), description = COALESCE(?, description), completed = COALESCE(?, completed), updated_at = NOW() WHERE id = ? AND user_id = ?',
+      [title, description, completed, req.params.id, userId(req)]
     );
-    const [rows] = await pool.query('SELECT * FROM todos WHERE id = ?', [req.params.id]);
+    const [rows] = await pool.query('SELECT * FROM todos WHERE id = ? AND user_id = ?', [req.params.id, userId(req)]);
     if (rows.length === 0) return res.status(404).json({ error: 'Todo not found' });
     res.json(rows[0]);
   } catch (err) {
@@ -92,9 +98,11 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE todo (and its documents)
+// DELETE todo (and its documents; must belong to user)
 router.delete('/:id', async (req, res) => {
   try {
+    const [owned] = await pool.query('SELECT id FROM todos WHERE id = ? AND user_id = ?', [req.params.id, userId(req)]);
+    if (owned.length === 0) return res.status(404).json({ error: 'Todo not found' });
     const [docs] = await pool.query('SELECT filename FROM documents WHERE todo_id = ?', [req.params.id]);
     const uploadsDir = path.join(__dirname, '..', 'uploads');
     for (const d of docs) {
@@ -102,19 +110,18 @@ router.delete('/:id', async (req, res) => {
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     }
     await pool.query('DELETE FROM documents WHERE todo_id = ?', [req.params.id]);
-    const [result] = await pool.query('DELETE FROM todos WHERE id = ?', [req.params.id]);
-    if (result.affectedRows === 0) return res.status(404).json({ error: 'Todo not found' });
+    await pool.query('DELETE FROM todos WHERE id = ?', [req.params.id]);
     res.json({ message: 'Todo deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST upload document for a todo
+// POST upload document for a todo (todo must belong to user)
 router.post('/:id/documents', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const [todos] = await pool.query('SELECT id FROM todos WHERE id = ?', [req.params.id]);
+    const [todos] = await pool.query('SELECT id FROM todos WHERE id = ? AND user_id = ?', [req.params.id, userId(req)]);
     if (todos.length === 0) return res.status(404).json({ error: 'Todo not found' });
     const [result] = await pool.query(
       'INSERT INTO documents (todo_id, original_name, filename) VALUES (?, ?, ?)',
@@ -127,12 +134,14 @@ router.post('/:id/documents', upload.single('file'), async (req, res) => {
   }
 });
 
-// GET download document
+// GET download document (todo must belong to user)
 router.get('/:todoId/documents/:docId', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT * FROM documents WHERE id = ? AND todo_id = ?',
-      [req.params.docId, req.params.todoId]
+      `SELECT d.* FROM documents d
+       INNER JOIN todos t ON t.id = d.todo_id AND t.user_id = ?
+       WHERE d.id = ? AND d.todo_id = ?`,
+      [userId(req), req.params.docId, req.params.todoId]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Document not found' });
     const filePath = path.join(__dirname, '..', 'uploads', rows[0].filename);
@@ -143,12 +152,14 @@ router.get('/:todoId/documents/:docId', async (req, res) => {
   }
 });
 
-// DELETE document
+// DELETE document (todo must belong to user)
 router.delete('/:todoId/documents/:docId', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT filename FROM documents WHERE id = ? AND todo_id = ?',
-      [req.params.docId, req.params.todoId]
+      `SELECT d.filename FROM documents d
+       INNER JOIN todos t ON t.id = d.todo_id AND t.user_id = ?
+       WHERE d.id = ? AND d.todo_id = ?`,
+      [userId(req), req.params.docId, req.params.todoId]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Document not found' });
     const filePath = path.join(__dirname, '..', 'uploads', rows[0].filename);

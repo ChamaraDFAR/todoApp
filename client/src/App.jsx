@@ -8,20 +8,29 @@ import {
   deleteTodo,
   uploadDocument,
   deleteDocument,
-  documentDownloadUrl,
+  getStoredUser,
+  removeToken,
 } from './api';
 import TodoList from './components/TodoList';
 import TodoForm from './components/TodoForm';
 import TodoDetail from './components/TodoDetail';
+import Dashboard from './components/Dashboard';
+import Auth from './components/Auth';
 import './App.css';
 
 function App() {
+  const [user, setUser] = useState(null);
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedTodoDetail, setSelectedTodoDetail] = useState(null);
   const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    const u = getStoredUser();
+    if (u) setUser(u);
+  }, []);
 
   const loadTodos = async () => {
     try {
@@ -36,16 +45,34 @@ function App() {
   };
 
   useEffect(() => {
+    if (!user) return;
     loadTodos();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
+    if (!user) return;
     if (!selectedId) {
       setSelectedTodoDetail(null);
       return;
     }
     getTodo(selectedId).then(setSelectedTodoDetail).catch(() => setSelectedTodoDetail(null));
-  }, [selectedId]);
+  }, [user, selectedId]);
+
+  const handleLoggedIn = (u) => {
+    setUser(u);
+  };
+
+  const handleLogout = () => {
+    removeToken();
+    setUser(null);
+    setTodos([]);
+    setSelectedId(null);
+    setSelectedTodoDetail(null);
+  };
+
+  if (!user) {
+    return <Auth onLoggedIn={handleLoggedIn} />;
+  }
 
   const handleCreate = async (title, description, files = []) => {
     if (files && files.length > 0) {
@@ -101,15 +128,23 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Todo List</h1>
-        <p className="tagline">Tasks & documents in one place</p>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => setShowForm(true)}
-        >
-          + New Todo
-        </button>
+        <div className="app-header-row">
+          <div>
+            <h1>Todo List</h1>
+            <p className="tagline">Tasks & documents in one place</p>
+          </div>
+          <div className="app-header-actions">
+            {user?.email && (
+              <span className="user-email">{user.email}</span>
+            )}
+            <button type="button" className="btn btn-primary" onClick={() => setShowForm(true)}>
+              + New Todo
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={handleLogout}>
+              Sign out
+            </button>
+          </div>
+        </div>
       </header>
 
       {error && (
@@ -133,6 +168,7 @@ function App() {
           <p className="loading">Loading…</p>
         ) : (
           <>
+            <Dashboard todos={todos} />
             <TodoList
               todos={todos}
               selectedId={selectedId}
@@ -148,7 +184,6 @@ function App() {
                 onDelete={() => handleDelete(selectedTodo.id)}
                 onUpload={(file) => handleUpload(selectedTodo.id, file)}
                 onDeleteDoc={handleDeleteDoc}
-                documentDownloadUrl={documentDownloadUrl}
               />
             )}
           </>

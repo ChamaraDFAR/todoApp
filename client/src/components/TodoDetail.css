@@ -84,3 +84,16 @@
 .document-name:hover {
   text-decoration: underline;
 }
+
+.document-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.document-link:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}

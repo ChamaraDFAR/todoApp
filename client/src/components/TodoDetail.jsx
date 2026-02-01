@@ -4,11 +4,12 @@ import DocumentUpload from './DocumentUpload';
 import {
   updateTodo,
   deleteDocument,
-  documentDownloadUrl,
+  downloadDocument,
 } from '../api';
 import './TodoDetail.css';
 
-function TodoDetail({ todo, onClose, onUpdate, onDelete, onUpload, onDeleteDoc, documentDownloadUrl }) {
+function TodoDetail({ todo, onClose, onUpdate, onDelete, onUpload, onDeleteDoc }) {
+  const [downloading, setDownloading] = useState(null);
   const [editing, setEditing] = useState(false);
   const documents = todo.documents || [];
 
@@ -23,6 +24,21 @@ function TodoDetail({ todo, onClose, onUpdate, onDelete, onUpload, onDeleteDoc, 
       await deleteDocument(todo.id, docId);
       onDeleteDoc(todo.id, docId);
     }
+  };
+
+  const handleDownload = async (doc) => {
+    if (downloading === doc.id) return;
+    setDownloading(doc.id);
+    try {
+      const { blob, filename } = await downloadDocument(todo.id, doc.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (_) {}
+    setDownloading(null);
   };
 
   return (
@@ -73,13 +89,14 @@ function TodoDetail({ todo, onClose, onUpdate, onDelete, onUpload, onDeleteDoc, 
               <ul className="document-list">
                 {documents.map((doc) => (
                   <li key={doc.id} className="document-item">
-                    <a
-                      href={documentDownloadUrl(todo.id, doc.id)}
-                      download={doc.original_name}
-                      className="document-name"
+                    <button
+                      type="button"
+                      className="document-name document-link"
+                      onClick={() => handleDownload(doc)}
+                      disabled={downloading === doc.id}
                     >
                       {doc.original_name}
-                    </a>
+                    </button>
                     <button
                       type="button"
                       className="btn btn-ghost btn-icon"
