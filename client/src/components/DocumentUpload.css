@@ -1,0 +1,40 @@
+.document-upload {
+  margin-bottom: 0.75rem;
+}
+
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.upload-zone:hover,
+.upload-zone.dragging {
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.06);
+  color: var(--text);
+}
+
+.upload-zone.uploading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.upload-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.upload-error {
+  font-size: 0.85rem;
+  color: var(--danger);
+  margin: 0.5rem 0 0 0;
+}

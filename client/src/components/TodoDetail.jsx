@@ -1,0 +1,102 @@
+import { useState } from 'react';
+import TodoForm from './TodoForm';
+import DocumentUpload from './DocumentUpload';
+import {
+  updateTodo,
+  deleteDocument,
+  documentDownloadUrl,
+} from '../api';
+import './TodoDetail.css';
+
+function TodoDetail({ todo, onClose, onUpdate, onDelete, onUpload, onDeleteDoc, documentDownloadUrl }) {
+  const [editing, setEditing] = useState(false);
+  const documents = todo.documents || [];
+
+  const handleSaveEdit = async (title, description) => {
+    await updateTodo(todo.id, { title, description });
+    onUpdate({ title, description });
+    setEditing(false);
+  };
+
+  const handleDeleteDoc = async (docId) => {
+    if (window.confirm('Remove this document?')) {
+      await deleteDocument(todo.id, docId);
+      onDeleteDoc(todo.id, docId);
+    }
+  };
+
+  return (
+    <div className="todo-detail">
+      <div className="todo-detail-header">
+        <button type="button" className="btn btn-ghost btn-icon close-btn" onClick={onClose} aria-label="Close">
+          ×
+        </button>
+      </div>
+
+      {editing ? (
+        <TodoForm
+          initialTitle={todo.title || ''}
+          initialDescription={todo.description || ''}
+          onSubmit={handleSaveEdit}
+          onCancel={() => setEditing(false)}
+          submitLabel="Save"
+        />
+      ) : (
+        <>
+          <div className="todo-detail-content">
+            <h2 className="todo-detail-title">{todo.title}</h2>
+            {todo.description && (
+              <p className="todo-detail-description">{todo.description}</p>
+            )}
+            <div className="todo-detail-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setEditing(true)}>
+                Edit
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={() => {
+                  if (window.confirm('Delete this todo and its documents?')) onDelete();
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+
+          <section className="todo-documents">
+            <h3>Documents</h3>
+            <DocumentUpload onUpload={onUpload} />
+            {documents.length === 0 ? (
+              <p className="no-docs">No documents attached.</p>
+            ) : (
+              <ul className="document-list">
+                {documents.map((doc) => (
+                  <li key={doc.id} className="document-item">
+                    <a
+                      href={documentDownloadUrl(todo.id, doc.id)}
+                      download={doc.original_name}
+                      className="document-name"
+                    >
+                      {doc.original_name}
+                    </a>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-icon"
+                      onClick={() => handleDeleteDoc(doc.id)}
+                      aria-label="Remove document"
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default TodoDetail;
