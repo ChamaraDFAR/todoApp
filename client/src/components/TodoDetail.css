@@ -25,6 +25,15 @@
   margin: 0 0 0.5rem 0;
 }
 
+.todo-detail-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .todo-detail-description {
   color: var(--text-muted);
   font-size: 0.95rem;

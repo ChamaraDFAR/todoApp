@@ -1,0 +1,116 @@
+.list-selector {
+  position: relative;
+}
+
+.list-selector-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.9rem;
+  min-width: 140px;
+  cursor: pointer;
+}
+
+.list-selector-trigger:hover {
+  background: var(--surface-hover);
+}
+
+.list-selector-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-selector-arrow {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.list-selector-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+.list-selector-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 2;
+}
+
+.list-selector-option-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.list-selector-option {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+}
+
+.list-selector-option:hover {
+  background: var(--surface-hover);
+}
+
+.list-selector-option.selected {
+  background: var(--surface-hover);
+  color: var(--accent);
+}
+
+.list-selector-role {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.list-selector-manage {
+  padding: 0.25rem 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.list-selector-manage:hover {
+  color: var(--text);
+}
+
+.list-selector-new {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  color: var(--accent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.list-selector-new:hover {
+  background: var(--surface-hover);
+}

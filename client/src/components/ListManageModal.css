@@ -1,0 +1,160 @@
+.list-manage-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 1000;
+}
+
+.list-manage-card {
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.list-manage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.list-manage-header h2 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.list-manage-header .btn-icon {
+  margin: -0.5rem -0.5rem 0 0;
+  font-size: 1.25rem;
+}
+
+.list-manage-error {
+  padding: 0.5rem 0.75rem;
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.list-manage-success {
+  padding: 0.5rem 0.75rem;
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.list-manage-section {
+  margin-bottom: 1.25rem;
+}
+
+.list-manage-section-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.5rem 0;
+}
+
+.list-manage-label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.list-manage-name {
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+}
+
+.list-manage-rename-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.list-manage-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.list-manage-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.list-manage-members {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list-manage-member {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border-radius: var(--radius);
+  margin-bottom: 0.35rem;
+  border: 1px solid var(--border);
+}
+
+.list-manage-role {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.list-manage-remove {
+  margin-left: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.list-manage-invite-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.list-manage-invite-row .list-manage-input {
+  min-width: 140px;
+}
+
+.list-manage-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.list-manage-actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}

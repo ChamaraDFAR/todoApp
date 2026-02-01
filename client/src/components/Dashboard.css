@@ -15,6 +15,65 @@
   letter-spacing: 0.04em;
 }
 
+.dashboard-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-filter-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dashboard-filter-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.dashboard-filter-input {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  min-width: 140px;
+}
+
+.dashboard-filter-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.dashboard-filter-select {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  min-width: 120px;
+  cursor: pointer;
+}
+
+.dashboard-filter-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.dashboard-filter-apply {
+  align-self: flex-end;
+}
+
 .dashboard-stats {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));

@@ -2,6 +2,7 @@ import express from 'express';
 import pool from '../db.js';
 import { upload } from '../upload.js';
 import { requireAuth } from '../middleware/auth.js';
+import { getListIdsForUser, canViewTodo, canEditTodo, getListAccess } from '../lib/listAccess.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -14,43 +15,100 @@ router.use(requireAuth);
 
 const userId = (req) => req.user.id;
 
-// GET all todos (with document count) for current user
+// GET all todos (owned + in lists I'm member of), with list info
+// Query params: search, date_from, date_to, completed (0=pending, 1=completed)
 router.get('/', async (req, res) => {
   try {
+    const listIds = await getListIdsForUser(userId(req));
+    const placeholders = listIds.length ? listIds.map(() => '?').join(',') : '0';
+    const conditions = [
+      `(t.user_id = ? OR (t.list_id IS NOT NULL AND t.list_id IN (${placeholders})))`,
+    ];
+    const params = [userId(req), ...listIds];
+
+    const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+    if (search) {
+      conditions.push('(t.title LIKE ? OR t.description LIKE ?)');
+      const term = `%${search}%`;
+      params.push(term, term);
+    }
+
+    const dateFrom = req.query.date_from;
+    if (dateFrom) {
+      conditions.push('t.created_at >= ?');
+      params.push(`${dateFrom} 00:00:00`);
+    }
+    const dateTo = req.query.date_to;
+    if (dateTo) {
+      conditions.push('t.created_at <= ?');
+      params.push(`${dateTo} 23:59:59`);
+    }
+
+    const completedParam = req.query.completed;
+    if (completedParam === '0' || completedParam === '1') {
+      conditions.push('t.completed = ?');
+      params.push(completedParam === '1' ? 1 : 0);
+    }
+
+    const whereClause = conditions.join(' AND ');
     const [rows] = await pool.query(
       `SELECT t.*, 
-        (SELECT COUNT(*) FROM documents d WHERE d.todo_id = t.id) AS document_count
+        (SELECT COUNT(*) FROM documents d WHERE d.todo_id = t.id) AS document_count,
+        l.name AS list_name,
+        u.email AS owner_email
        FROM todos t
-       WHERE t.user_id = ?
-       ORDER BY t.created_at DESC`,
-      [userId(req)]
+       LEFT JOIN lists l ON l.id = t.list_id
+       LEFT JOIN users u ON u.id = t.user_id
+       WHERE ${whereClause}
+       ORDER BY t.updated_at DESC, t.created_at DESC`,
+      params
     );
-    res.json(rows);
+    const uid = userId(req);
+    const listIdsToCheck = [...new Set(rows.filter((r) => r.list_id && r.user_id !== uid).map((r) => r.list_id))];
+    const listEdit = {};
+    for (const lid of listIdsToCheck) {
+      const a = await getListAccess(uid, lid);
+      listEdit[lid] = a.canEdit;
+    }
+    const withAccess = rows.map((r) => ({
+      ...r,
+      is_owner: r.user_id === uid,
+      can_edit: r.user_id === uid || (r.list_id && listEdit[r.list_id]),
+    }));
+    res.json(withAccess);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET single todo with documents (must belong to user)
+// GET single todo with documents (owner or list member)
 router.get('/:id', async (req, res) => {
   try {
-    const [todos] = await pool.query('SELECT * FROM todos WHERE id = ? AND user_id = ?', [req.params.id, userId(req)]);
+    const canView = await canViewTodo(userId(req), req.params.id);
+    if (!canView) return res.status(404).json({ error: 'Todo not found' });
+    const [todos] = await pool.query('SELECT * FROM todos WHERE id = ?', [req.params.id]);
     if (todos.length === 0) return res.status(404).json({ error: 'Todo not found' });
     const [docs] = await pool.query('SELECT id, original_name, filename, created_at FROM documents WHERE todo_id = ?', [req.params.id]);
-    res.json({ ...todos[0], documents: docs });
+    const canEdit = await canEditTodo(userId(req), req.params.id);
+    res.json({ ...todos[0], documents: docs, can_edit: canEdit });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST create todo with optional documents (multipart)
+// POST create todo with optional documents (multipart); optional list_id
 router.post('/with-documents', upload.array('files'), async (req, res) => {
   try {
     const title = req.body.title || 'Untitled';
     const description = req.body.description || '';
+    const listId = req.body.list_id ? Number(req.body.list_id) : null;
+    if (listId) {
+      const access = await getListAccess(userId(req), listId);
+      if (!access.canEdit) return res.status(403).json({ error: 'You cannot add todos to this list' });
+    }
     const [result] = await pool.query(
-      'INSERT INTO todos (user_id, title, description) VALUES (?, ?, ?)',
-      [userId(req), title, description]
+      'INSERT INTO todos (user_id, list_id, title, description) VALUES (?, ?, ?, ?)',
+      [userId(req), listId, title, description]
     );
     const todoId = result.insertId;
     const files = req.files || [];
@@ -67,13 +125,18 @@ router.post('/with-documents', upload.array('files'), async (req, res) => {
   }
 });
 
-// POST create todo (JSON, no documents)
+// POST create todo (JSON, no documents); optional list_id
 router.post('/', async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, list_id: listIdParam } = req.body;
+    const listId = listIdParam ? Number(listIdParam) : null;
+    if (listId) {
+      const access = await getListAccess(userId(req), listId);
+      if (!access.canEdit) return res.status(403).json({ error: 'You cannot add todos to this list' });
+    }
     const [result] = await pool.query(
-      'INSERT INTO todos (user_id, title, description) VALUES (?, ?, ?)',
-      [userId(req), title || 'Untitled', description || '']
+      'INSERT INTO todos (user_id, list_id, title, description) VALUES (?, ?, ?, ?)',
+      [userId(req), listId, title || 'Untitled', description || '']
     );
     const [rows] = await pool.query('SELECT * FROM todos WHERE id = ?', [result.insertId]);
     res.status(201).json(rows[0]);
@@ -82,15 +145,17 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT update todo
+// PUT update todo (owner or list editor)
 router.put('/:id', async (req, res) => {
   try {
+    const canEdit = await canEditTodo(userId(req), req.params.id);
+    if (!canEdit) return res.status(404).json({ error: 'Todo not found' });
     const { title, description, completed } = req.body;
     await pool.query(
-      'UPDATE todos SET title = COALESCE(?, title), description = COALESCE(?, description), completed = COALESCE(?, completed), updated_at = NOW() WHERE id = ? AND user_id = ?',
-      [title, description, completed, req.params.id, userId(req)]
+      'UPDATE todos SET title = COALESCE(?, title), description = COALESCE(?, description), completed = COALESCE(?, completed), updated_at = NOW() WHERE id = ?',
+      [title, description, completed, req.params.id]
     );
-    const [rows] = await pool.query('SELECT * FROM todos WHERE id = ? AND user_id = ?', [req.params.id, userId(req)]);
+    const [rows] = await pool.query('SELECT * FROM todos WHERE id = ?', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Todo not found' });
     res.json(rows[0]);
   } catch (err) {
@@ -98,11 +163,11 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE todo (and its documents; must belong to user)
+// DELETE todo (owner or list editor)
 router.delete('/:id', async (req, res) => {
   try {
-    const [owned] = await pool.query('SELECT id FROM todos WHERE id = ? AND user_id = ?', [req.params.id, userId(req)]);
-    if (owned.length === 0) return res.status(404).json({ error: 'Todo not found' });
+    const canEdit = await canEditTodo(userId(req), req.params.id);
+    if (!canEdit) return res.status(404).json({ error: 'Todo not found' });
     const [docs] = await pool.query('SELECT filename FROM documents WHERE todo_id = ?', [req.params.id]);
     const uploadsDir = path.join(__dirname, '..', 'uploads');
     for (const d of docs) {
@@ -117,12 +182,12 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST upload document for a todo (todo must belong to user)
+// POST upload document for a todo (owner or list editor)
 router.post('/:id/documents', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const [todos] = await pool.query('SELECT id FROM todos WHERE id = ? AND user_id = ?', [req.params.id, userId(req)]);
-    if (todos.length === 0) return res.status(404).json({ error: 'Todo not found' });
+    const canEdit = await canEditTodo(userId(req), req.params.id);
+    if (!canEdit) return res.status(404).json({ error: 'Todo not found' });
     const [result] = await pool.query(
       'INSERT INTO documents (todo_id, original_name, filename) VALUES (?, ?, ?)',
       [req.params.id, req.file.originalname, req.file.filename]
@@ -134,14 +199,14 @@ router.post('/:id/documents', upload.single('file'), async (req, res) => {
   }
 });
 
-// GET download document (todo must belong to user)
+// GET download document (owner or list member)
 router.get('/:todoId/documents/:docId', async (req, res) => {
   try {
+    const canView = await canViewTodo(userId(req), req.params.todoId);
+    if (!canView) return res.status(404).json({ error: 'Document not found' });
     const [rows] = await pool.query(
-      `SELECT d.* FROM documents d
-       INNER JOIN todos t ON t.id = d.todo_id AND t.user_id = ?
-       WHERE d.id = ? AND d.todo_id = ?`,
-      [userId(req), req.params.docId, req.params.todoId]
+      'SELECT d.* FROM documents d WHERE d.id = ? AND d.todo_id = ?',
+      [req.params.docId, req.params.todoId]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Document not found' });
     const filePath = path.join(__dirname, '..', 'uploads', rows[0].filename);
@@ -152,14 +217,14 @@ router.get('/:todoId/documents/:docId', async (req, res) => {
   }
 });
 
-// DELETE document (todo must belong to user)
+// DELETE document (owner or list editor)
 router.delete('/:todoId/documents/:docId', async (req, res) => {
   try {
+    const canEdit = await canEditTodo(userId(req), req.params.todoId);
+    if (!canEdit) return res.status(404).json({ error: 'Document not found' });
     const [rows] = await pool.query(
-      `SELECT d.filename FROM documents d
-       INNER JOIN todos t ON t.id = d.todo_id AND t.user_id = ?
-       WHERE d.id = ? AND d.todo_id = ?`,
-      [userId(req), req.params.docId, req.params.todoId]
+      'SELECT d.filename FROM documents d WHERE d.id = ? AND d.todo_id = ?',
+      [req.params.docId, req.params.todoId]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Document not found' });
     const filePath = path.join(__dirname, '..', 'uploads', rows[0].filename);
