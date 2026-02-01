@@ -10,16 +10,38 @@ CREATE TABLE IF NOT EXISTS users (
   INDEX idx_email (email)
 );
 
+CREATE TABLE IF NOT EXISTS lists (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  owner_id INT NOT NULL,
+  name VARCHAR(255) NOT NULL DEFAULT 'Untitled list',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_owner_id (owner_id)
+);
+
+CREATE TABLE IF NOT EXISTS list_members (
+  list_id INT NOT NULL,
+  user_id INT NOT NULL,
+  role ENUM('editor', 'viewer') NOT NULL DEFAULT 'editor',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (list_id, user_id),
+  FOREIGN KEY (list_id) REFERENCES lists(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS todos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
+  list_id INT NULL,
   title VARCHAR(255) NOT NULL DEFAULT 'Untitled',
   description TEXT,
   completed TINYINT(1) NOT NULL DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  INDEX idx_user_id (user_id)
+  FOREIGN KEY (list_id) REFERENCES lists(id) ON DELETE SET NULL,
+  INDEX idx_user_id (user_id),
+  INDEX idx_list_id (list_id)
 );
 
 CREATE TABLE IF NOT EXISTS documents (

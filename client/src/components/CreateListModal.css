@@ -1,0 +1,79 @@
+.create-list-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 1000;
+}
+
+.create-list-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+}
+
+.create-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.create-list-header h2 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.create-list-header .btn-icon {
+  margin: -0.5rem -0.5rem 0 0;
+  font-size: 1.25rem;
+}
+
+.create-list-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.create-list-error {
+  padding: 0.5rem 0.75rem;
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+.create-list-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.create-list-input {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.create-list-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.create-list-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}

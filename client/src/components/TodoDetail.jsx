@@ -8,7 +8,7 @@ import {
 } from '../api';
 import './TodoDetail.css';
 
-function TodoDetail({ todo, onClose, onUpdate, onDelete, onUpload, onDeleteDoc }) {
+function TodoDetail({ todo, canEdit = true, onClose, onUpdate, onDelete, onUpload, onDeleteDoc }) {
   const [downloading, setDownloading] = useState(null);
   const [editing, setEditing] = useState(false);
   const documents = todo.documents || [];
@@ -64,27 +64,29 @@ function TodoDetail({ todo, onClose, onUpdate, onDelete, onUpload, onDeleteDoc }
             {todo.description && (
               <p className="todo-detail-description">{todo.description}</p>
             )}
-            <div className="todo-detail-actions">
-              <button type="button" className="btn btn-ghost" onClick={() => setEditing(true)}>
-                Edit
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={() => {
-                  if (window.confirm('Delete this todo and its documents?')) onDelete();
-                }}
-              >
-                Delete
-              </button>
-            </div>
+            {canEdit && (
+              <div className="todo-detail-actions">
+                <button type="button" className="btn btn-ghost" onClick={() => setEditing(true)}>
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={() => {
+                    if (window.confirm('Delete this todo and its documents?')) onDelete();
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
 
           <section className="todo-documents">
             <h3>Documents</h3>
-            <DocumentUpload onUpload={onUpload} />
+            {canEdit && <DocumentUpload onUpload={onUpload} />}
             {documents.length === 0 ? (
-              <p className="no-docs">No documents attached.</p>
+              <p className="no-docs">{canEdit ? 'No documents attached.' : 'No documents.'}</p>
             ) : (
               <ul className="document-list">
                 {documents.map((doc) => (
@@ -97,14 +99,16 @@ function TodoDetail({ todo, onClose, onUpdate, onDelete, onUpload, onDeleteDoc }
                     >
                       {doc.original_name}
                     </button>
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-icon"
-                      onClick={() => handleDeleteDoc(doc.id)}
-                      aria-label="Remove document"
-                    >
-                      ×
-                    </button>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-icon"
+                        onClick={() => handleDeleteDoc(doc.id)}
+                        aria-label="Remove document"
+                      >
+                        ×
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -112,6 +112,11 @@
   gap: 1.5rem;
 }
 
+.app-list-bar {
+  grid-column: 1 / -1;
+  margin-bottom: 0.5rem;
+}
+
 .app-main > .dashboard {
   grid-column: 1 / -1;
 }

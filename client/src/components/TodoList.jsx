@@ -1,6 +1,6 @@
 import './TodoList.css';
 
-function TodoList({ todos, selectedId, onSelect, onToggle, onDelete }) {
+function TodoList({ todos, selectedId, onSelect, onToggle, onDelete, showListBadge }) {
   if (todos.length === 0) {
     return (
       <div className="todo-list empty">
@@ -18,35 +18,44 @@ function TodoList({ todos, selectedId, onSelect, onToggle, onDelete }) {
           className={`todo-item ${todo.completed ? 'completed' : ''} ${selectedId === todo.id ? 'selected' : ''}`}
         >
           <div className="todo-item-main">
-            <button
-              type="button"
-              className="checkbox"
-              onClick={() => onToggle(todo)}
-              aria-label={todo.completed ? 'Mark incomplete' : 'Mark complete'}
-            >
-              {todo.completed ? '✓' : ''}
-            </button>
+            {todo.can_edit !== false ? (
+              <button
+                type="button"
+                className="checkbox"
+                onClick={() => onToggle(todo)}
+                aria-label={todo.completed ? 'Mark incomplete' : 'Mark complete'}
+              >
+                {todo.completed ? '✓' : ''}
+              </button>
+            ) : (
+              <span className="checkbox readonly" aria-hidden>{todo.completed ? '✓' : ''}</span>
+            )}
             <button
               type="button"
               className="todo-content"
               onClick={() => onSelect(todo.id)}
             >
               <span className="todo-title">{todo.title}</span>
+              {showListBadge && todo.list_name && (
+                <span className="list-badge" title={todo.list_name}>{todo.list_name}</span>
+              )}
               {todo.document_count > 0 && (
                 <span className="doc-badge">{todo.document_count} file{todo.document_count !== 1 ? 's' : ''}</span>
               )}
             </button>
-            <button
-              type="button"
-              className="btn btn-ghost btn-icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (window.confirm('Delete this todo and its documents?')) onDelete(todo.id);
-              }}
-              aria-label="Delete todo"
-            >
-              ×
-            </button>
+            {(todo.can_edit !== false) && (
+              <button
+                type="button"
+                className="btn btn-ghost btn-icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm('Delete this todo and its documents?')) onDelete(todo.id);
+                }}
+                aria-label="Delete todo"
+              >
+                ×
+              </button>
+            )}
           </div>
         </li>
       ))}

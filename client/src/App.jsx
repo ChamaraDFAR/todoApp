@@ -8,6 +8,8 @@ import {
   deleteTodo,
   uploadDocument,
   deleteDocument,
+  getLists,
+  createList,
   getStoredUser,
   removeToken,
 } from './api';
@@ -15,6 +17,9 @@ import TodoList from './components/TodoList';
 import TodoForm from './components/TodoForm';
 import TodoDetail from './components/TodoDetail';
 import Dashboard from './components/Dashboard';
+import ListSelector from './components/ListSelector';
+import CreateListModal from './components/CreateListModal';
+import ListManageModal from './components/ListManageModal';
 import Auth from './components/Auth';
 import Profile from './components/Profile';
 import './App.css';
@@ -28,6 +33,17 @@ function App() {
   const [selectedTodoDetail, setSelectedTodoDetail] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [lists, setLists] = useState([]);
+  const [selectedListId, setSelectedListId] = useState(null);
+  const [showCreateList, setShowCreateList] = useState(false);
+  const [manageList, setManageList] = useState(null);
+
+  const loadLists = async () => {
+    try {
+      const data = await getLists();
+      setLists(data);
+    } catch (_) {}
+  };
 
   useEffect(() => {
     const u = getStoredUser();
@@ -49,6 +65,7 @@ function App() {
   useEffect(() => {
     if (!user) return;
     loadTodos();
+    loadLists();
   }, [user]);
 
   useEffect(() => {
@@ -77,10 +94,11 @@ function App() {
   }
 
   const handleCreate = async (title, description, files = []) => {
+    const list_id = selectedListId || undefined;
     if (files && files.length > 0) {
-      await createTodoWithDocuments({ title, description, files });
+      await createTodoWithDocuments({ title, description, files, list_id });
     } else {
-      await createTodo({ title, description });
+      await createTodo({ title, description, list_id });
     }
     await loadTodos();
     setShowForm(false);
@@ -127,6 +145,11 @@ function App() {
 
   const selectedTodo = selectedTodoDetail || (selectedId ? todos.find((t) => t.id === selectedId) : null);
 
+  const filteredTodos =
+    selectedListId == null
+      ? todos.filter((t) => !t.list_id && t.is_owner)
+      : todos.filter((t) => t.list_id === selectedListId);
+
   return (
     <div className="app">
       <header className="app-header">
@@ -168,6 +191,35 @@ function App() {
         />
       )}
 
+      {showCreateList && (
+        <CreateListModal
+          onClose={() => setShowCreateList(false)}
+          onCreate={async (name) => {
+            await createList(name);
+            loadLists();
+          }}
+        />
+      )}
+
+      {manageList && (
+        <ListManageModal
+          listId={manageList.id}
+          listName={manageList.name}
+          currentUserId={user?.id}
+          onClose={() => setManageList(null)}
+          onUpdated={() => {
+            loadLists();
+            loadTodos();
+          }}
+          onDeleted={() => {
+            setManageList(null);
+            setSelectedListId(null);
+            loadLists();
+            loadTodos();
+          }}
+        />
+      )}
+
       <main className="app-main">
         {showProfile ? (
           <Profile user={user} onBack={() => setShowProfile(false)} />
@@ -175,17 +227,28 @@ function App() {
           <p className="loading">Loading…</p>
         ) : (
           <>
-            <Dashboard todos={todos} />
+            <div className="app-list-bar">
+              <ListSelector
+                lists={lists}
+                selectedListId={selectedListId}
+                onSelect={setSelectedListId}
+                onNewList={() => setShowCreateList(true)}
+                onManageList={setManageList}
+              />
+            </div>
+            <Dashboard todos={filteredTodos} />
             <TodoList
-              todos={todos}
+              todos={filteredTodos}
               selectedId={selectedId}
               onSelect={setSelectedId}
               onToggle={handleToggle}
               onDelete={handleDelete}
+              showListBadge
             />
             {selectedTodo && (
               <TodoDetail
                 todo={selectedTodo}
+                canEdit={selectedTodo?.can_edit !== false}
                 onClose={() => setSelectedId(null)}
                 onUpdate={(data) => handleUpdate(selectedTodo.id, data)}
                 onDelete={() => handleDelete(selectedTodo.id)}

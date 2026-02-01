@@ -105,20 +105,21 @@ export async function getTodo(id) {
   return res.json();
 }
 
-export async function createTodo({ title, description }) {
+export async function createTodo({ title, description, list_id }) {
   const res = await fetch(`${API}/todos`, {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
-    body: JSON.stringify({ title, description }),
+    body: JSON.stringify({ title, description, list_id: list_id ?? null }),
   });
   await checkRes(res);
   return res.json();
 }
 
-export async function createTodoWithDocuments({ title, description, files }) {
+export async function createTodoWithDocuments({ title, description, files, list_id }) {
   const form = new FormData();
   form.append('title', title || 'Untitled');
   form.append('description', description || '');
+  if (list_id != null) form.append('list_id', list_id);
   (files || []).forEach((file) => form.append('files', file));
   const res = await fetch(`${API}/todos/with-documents`, {
     method: 'POST',
@@ -162,6 +163,61 @@ export async function deleteDocument(todoId, docId) {
     method: 'DELETE',
     headers: authHeaders(),
   });
+  await checkRes(res);
+  return res.json();
+}
+
+// Lists (shared lists & collaboration)
+export async function getLists() {
+  const res = await fetch(`${API}/lists`, { headers: authHeaders() });
+  await checkRes(res);
+  return res.json();
+}
+
+export async function getList(id) {
+  const res = await fetch(`${API}/lists/${id}`, { headers: authHeaders() });
+  await checkRes(res);
+  return res.json();
+}
+
+export async function createList(name) {
+  const res = await fetch(`${API}/lists`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ name: name || 'Untitled list' }),
+  });
+  await checkRes(res);
+  return res.json();
+}
+
+export async function updateList(id, { name }) {
+  const res = await fetch(`${API}/lists/${id}`, {
+    method: 'PATCH',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ name }),
+  });
+  await checkRes(res);
+  return res.json();
+}
+
+export async function deleteList(id) {
+  const res = await fetch(`${API}/lists/${id}`, { method: 'DELETE', headers: authHeaders() });
+  await checkRes(res);
+  return res.json();
+}
+
+export async function inviteToList(listId, email, role = 'editor') {
+  const res = await fetch(`${API}/lists/${listId}/members`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ email, role }),
+  });
+  await checkRes(res);
+  return res.json();
+}
+
+export async function removeFromList(listId, userId) {
+  const res = await fetch(`${API}/lists/${listId}/members/${userId}`, { method: 'DELETE', headers: authHeaders() });
   await checkRes(res);
   return res.json();
 }
