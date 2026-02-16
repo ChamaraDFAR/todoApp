@@ -14,8 +14,14 @@ function TodoList({ todos, selectedId, onSelect, onToggle, onDelete, showListBad
   if (todos.length === 0) {
     return (
       <div className="todo-list empty">
-        <p>No todos yet.</p>
-        <p className="hint">Click “New Todo” to add one.</p>
+        <div className="empty-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+          </svg>
+        </div>
+        <p>No todos yet</p>
+        <p className="hint">Click &quot;+ New&quot; to create your first task</p>
       </div>
     );
   }

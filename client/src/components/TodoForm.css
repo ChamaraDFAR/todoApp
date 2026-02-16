@@ -1,43 +1,59 @@
 .todo-form {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
   margin-bottom: 1.5rem;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .todo-form-input {
   width: 100%;
   padding: 0.7rem 0.9rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   background: var(--bg);
   color: var(--text);
   font-size: 1rem;
   margin-bottom: 0.75rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .todo-form-input:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 .todo-form-textarea {
   width: 100%;
   padding: 0.7rem 0.9rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   background: var(--bg);
   color: var(--text);
   font-size: 0.95rem;
   resize: vertical;
   min-height: 60px;
   margin-bottom: 1rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .todo-form-textarea:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 .todo-form-documents {
@@ -47,18 +63,19 @@
 .todo-form-upload-zone {
   border: 2px dashed var(--border);
   border-radius: var(--radius);
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-muted);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: all var(--transition-fast);
+  position: relative;
 }
 
 .todo-form-upload-zone:hover {
   border-color: var(--accent);
-  background: rgba(99, 102, 241, 0.06);
-  color: var(--text);
+  background: var(--accent-subtle);
+  color: var(--text-secondary);
 }
 
 .todo-form-upload-zone .upload-input {
@@ -71,7 +88,7 @@
 
 .todo-form-file-list {
   list-style: none;
-  margin: 0.5rem 0 0 0;
+  margin: 0.6rem 0 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -82,19 +99,20 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
+  padding: 0.45rem 0.7rem;
   background: var(--bg);
-  border-radius: 6px;
-  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
 }
 
 .todo-form-file-name {
   flex: 1;
   min-width: 0;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text-secondary);
 }
 
 .todo-form-documents .upload-error {

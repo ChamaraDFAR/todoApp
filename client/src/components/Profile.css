@@ -2,6 +2,12 @@
   max-width: 560px;
   margin: 0 auto;
   padding: 0 1.5rem 2rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .profile-page-header {
@@ -10,7 +16,7 @@
 
 .profile-back {
   margin-bottom: 0.75rem;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   padding-left: 0;
 }
 
@@ -18,28 +24,32 @@
   font-size: 1.75rem;
   font-weight: 700;
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .profile-page-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .profile-block {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
 }
 
 .profile-block-title {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   margin: 0 0 1rem 0;
 }
 
@@ -47,10 +57,12 @@
   font-size: 1rem;
   color: var(--text);
   margin: 0;
-  padding: 0.6rem 0.75rem;
+  padding: 0.65rem 0.85rem;
   background: var(--bg);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
 }
 
 .profile-options {
@@ -76,15 +88,15 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   background: var(--bg);
   border: none;
   color: var(--text);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-family: inherit;
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s;
+  transition: background var(--transition-fast);
 }
 
 .profile-option-btn:hover {
@@ -93,20 +105,22 @@
 
 .profile-option-btn.active {
   background: var(--surface-hover);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .profile-option-label {
   flex: 1;
+  font-weight: 500;
 }
 
 .profile-option-arrow {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
+  transition: transform var(--transition-fast);
 }
 
 .profile-option-content {
-  padding: 1rem 1rem 1.25rem;
+  padding: 1.25rem;
   background: var(--surface);
   border-top: none;
 }
@@ -119,38 +133,43 @@
 
 .profile-error {
   padding: 0.6rem 0.75rem;
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--danger-subtle);
   color: #f87171;
-  border-radius: var(--radius);
-  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  border: 1px solid rgba(239, 68, 68, 0.15);
 }
 
 .profile-success {
   padding: 0.6rem 0.75rem;
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
-  border-radius: var(--radius);
-  font-size: 0.9rem;
+  background: var(--success-subtle);
+  color: var(--success);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  border: 1px solid rgba(16, 185, 129, 0.15);
 }
 
 .profile-label {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  font-size: 0.9rem;
-  color: var(--text-muted);
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .profile-input {
-  padding: 0.6rem 0.75rem;
+  padding: 0.65rem 0.85rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   background: var(--bg);
   color: var(--text);
   font-size: 1rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .profile-input:focus {
   outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }

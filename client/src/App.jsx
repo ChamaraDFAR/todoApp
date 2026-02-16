@@ -179,14 +179,14 @@ function App() {
         <div className="app-header-row">
           <div>
             <h1>Todo List</h1>
-            <p className="tagline">Tasks & documents in one place</p>
+            <p className="tagline">Organize tasks and documents in one place</p>
           </div>
           <div className="app-header-actions">
             {user?.email && (
               <span className="user-email">{user.email}</span>
             )}
             <button type="button" className="btn btn-primary" onClick={() => setShowForm(true)}>
-              + New Todo
+              + New
             </button>
             <button type="button" className="btn btn-ghost" onClick={() => setShowProfile(true)}>
               Profile

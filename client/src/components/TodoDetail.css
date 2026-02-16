@@ -1,12 +1,18 @@
 .todo-detail {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
   position: sticky;
   top: 1rem;
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .todo-detail-header {
@@ -23,22 +29,25 @@
   font-size: 1.2rem;
   font-weight: 600;
   margin: 0 0 0.5rem 0;
+  letter-spacing: -0.01em;
 }
 
 .todo-detail-meta {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   margin-bottom: 0.75rem;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+  font-family: var(--font-mono);
 }
 
 .todo-detail-description {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 0.95rem;
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.25rem 0;
   white-space: pre-wrap;
+  line-height: 1.6;
 }
 
 .todo-detail-actions {
@@ -47,15 +56,19 @@
   margin-bottom: 1.5rem;
 }
 
+/* ─── Documents Section ────────────────────────── */
+
 .todo-documents h3 {
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   font-weight: 600;
   margin: 0 0 0.75rem 0;
   color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .no-docs {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-muted);
   margin: 0.5rem 0 0 0;
 }
@@ -73,24 +86,31 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.6rem;
+  padding: 0.55rem 0.7rem;
   background: var(--bg);
-  border-radius: 6px;
-  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  transition: border-color var(--transition-fast);
+}
+
+.document-item:hover {
+  border-color: var(--border);
 }
 
 .document-name {
   flex: 1;
   min-width: 0;
-  font-size: 0.9rem;
-  color: var(--accent);
+  font-size: 0.88rem;
+  color: var(--accent-hover);
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color var(--transition-fast);
 }
 
 .document-name:hover {
+  color: var(--accent);
   text-decoration: underline;
 }
 
@@ -103,6 +123,6 @@
 }
 
 .document-link:disabled {
-  opacity: 0.7;
+  opacity: 0.5;
   cursor: wait;
 }
