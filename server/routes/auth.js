@@ -24,7 +24,7 @@ router.post('/register', async (req, res) => {
     );
     const userId = result.insertId;
     const token = signToken({ id: userId, email: emailNorm });
-    res.status(201).json({ user: { id: userId, email: emailNorm }, token });
+    res.status(201).json({ user: { id: userId, email: emailNorm, name: null, avatar: null }, token });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ error: 'Email already registered' });
@@ -41,7 +41,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password required' });
     }
     const emailNorm = String(email).trim().toLowerCase();
-    const [rows] = await pool.query('SELECT id, email, password_hash FROM users WHERE email = ?', [emailNorm]);
+    const [rows] = await pool.query('SELECT id, email, name, avatar, password_hash FROM users WHERE email = ?', [emailNorm]);
     if (rows.length === 0) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
@@ -49,7 +49,7 @@ router.post('/login', async (req, res) => {
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) return res.status(401).json({ error: 'Invalid email or password' });
     const token = signToken({ id: user.id, email: user.email });
-    res.json({ user: { id: user.id, email: user.email }, token });
+    res.json({ user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar }, token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

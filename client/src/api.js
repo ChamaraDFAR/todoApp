@@ -93,6 +93,44 @@ export async function resetPassword(email, currentPassword, newPassword) {
   return res.json();
 }
 
+// Profile
+export async function getProfile() {
+  const res = await fetch(`${API}/profile`, { headers: authHeaders() });
+  await checkRes(res);
+  return res.json();
+}
+
+export async function updateProfile({ name, email }) {
+  const res = await fetch(`${API}/profile`, {
+    method: 'PUT',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ name, email }),
+  });
+  await checkRes(res);
+  return res.json();
+}
+
+export async function uploadAvatar(file) {
+  const form = new FormData();
+  form.append('avatar', file);
+  const res = await fetch(`${API}/profile/avatar`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: form,
+  });
+  await checkRes(res);
+  return res.json();
+}
+
+export async function deleteAvatar() {
+  const res = await fetch(`${API}/profile/avatar`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  await checkRes(res);
+  return res.json();
+}
+
 /** @param {{ search?: string, date_from?: string, date_to?: string, completed?: string }} params - completed: '' | '0' (pending) | '1' (completed) */
 export async function getTodos(params = {}) {
   const q = new URLSearchParams();

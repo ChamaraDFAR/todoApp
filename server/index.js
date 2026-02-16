@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import todosRouter from './routes/todos.js';
 import listsRouter from './routes/lists.js';
 import authRouter from './routes/auth.js';
+import profileRouter from './routes/profile.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -18,6 +19,7 @@ const PORT = process.env.PORT || 5001;
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use('/api/auth', authRouter);
+app.use('/api/profile', profileRouter);
 app.use('/api/lists', listsRouter);
 app.use('/api/todos', todosRouter);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
