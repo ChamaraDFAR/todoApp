@@ -188,8 +188,21 @@ function App() {
             <button type="button" className="btn btn-primary" onClick={() => setShowForm(true)}>
               + New Todo
             </button>
-            <button type="button" className="btn btn-ghost" onClick={() => setShowProfile(true)}>
-              Profile
+            <button type="button" className="btn btn-ghost btn-with-icon" onClick={() => setShowProfile(true)}>
+              <svg
+                className="profile-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 21a8 8 0 0 0-16 0" />
+                <circle cx="12" cy="8" r="4" />
+              </svg>
+              <span>Profile</span>
             </button>
             <button type="button" className="btn btn-ghost" onClick={handleLogout}>
               Sign out

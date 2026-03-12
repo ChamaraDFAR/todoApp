@@ -77,6 +77,18 @@
   background: rgba(239, 68, 68, 0.15);
 }
 
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.profile-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
 .banner {
   padding: 0.75rem 1rem;
   border-radius: var(--radius);
