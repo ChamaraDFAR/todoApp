@@ -1,5 +1,5 @@
-// Use backend port 5001 (5000 is often taken by macOS AirPlay)
-const API = import.meta.env.DEV ? 'http://localhost:5002/api' : '/api';
+// Allow overriding API base at build time; default to backend port 5001.
+const API = import.meta.env.VITE_API_URL || '/api';
 
 const AUTH_KEY = 'todo_app_token';
 
