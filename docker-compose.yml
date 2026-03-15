@@ -3,15 +3,15 @@ services:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: todo_app
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: todoApp
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./server/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -28,8 +28,8 @@ services:
       PORT: 5002
       MYSQL_HOST: db
       MYSQL_USER: root
-      MYSQL_PASSWORD: rootpassword
-      MYSQL_DATABASE: todo_app
+      MYSQL_PASSWORD:
+      MYSQL_DATABASE: todoApp 
       JWT_SECRET: change_me_in_production
     ports:
       - "5002:5002"
@@ -46,7 +46,7 @@ services:
     depends_on:
       - server
     ports:
-      - "80:3000"
+      - "3000:3000"
 
 volumes:
   mysql_data:
