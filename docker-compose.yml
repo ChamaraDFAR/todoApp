@@ -7,8 +7,8 @@ services:
     environment:
       PORT: 5002
       MYSQL_HOST: host.docker.internal
-      MYSQL_USER: root
-      MYSQL_PASSWORD: 12345678
+      MYSQL_USER: todoUser
+      MYSQL_PASSWORD: Emgwcmb#145355
       MYSQL_DATABASE: todoApp
       JWT_SECRET: change_me_in_production
     ports:
